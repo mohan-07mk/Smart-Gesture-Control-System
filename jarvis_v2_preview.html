@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#08111E;font-family:'Courier New',monospace;color:#C8E8F8;font-size:11px;overflow:hidden;}
+.root{display:flex;flex-direction:column;width:100%;height:560px;padding:6px;gap:6px;}
+.header{height:46px;background:linear-gradient(90deg,#08111E 0%,#0B1929 15%,#0B1929 85%,#08111E 100%);border:1px solid #0F3F60;border-radius:6px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0;}
+.h-dots{color:#1565C0;font-size:10px;letter-spacing:8px;}
+.h-title{color:#00E5FF;font-size:13px;font-weight:bold;letter-spacing:8px;}
+.h-clock{color:#3A6680;font-size:10px;}
+.body{display:flex;gap:6px;flex:1;min-height:0;}
+.left{width:22%;background:#0B1929;border:1px solid #0F3F60;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+.centre{flex:1;background:#0B1929;border:1px solid #0F3F60;border-radius:8px;padding:6px;display:flex;flex-direction:column;gap:6px;}
+.right{width:26%;background:#0B1929;border:1px solid #0F3F60;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+.bottom{height:118px;background:#0B1929;border:1px solid #0F3F60;border-radius:8px;padding:8px 12px;display:flex;gap:12px;flex-shrink:0;}
+.sec{font-size:7px;color:#00E5FF;letter-spacing:3px;font-weight:bold;border-bottom:1px solid #0F3F60;padding-bottom:3px;margin-bottom:2px;}
+.sec.or{color:#FF6D00;}
+.sec.dim{color:#3A6680;}
+.hline{height:1px;background:#0F3F60;margin:2px 0;}
+/* bars */
+.bar-section{display:flex;gap:8px;align-items:stretch;flex:1;}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.bar-track{width:32px;flex:1;background:#0A1C2E;border:1.5px solid #1A5C82;border-radius:6px;position:relative;overflow:hidden;min-height:80px;}
+.bar-fill{position:absolute;bottom:0;width:100%;border-radius:5px;}
+.bar-fill.c{background:linear-gradient(to top,#004d66,#00E5FF);}
+.bar-fill.o{background:linear-gradient(to top,#7a2e00,#FF6D00);}
+.bar-tick{position:absolute;width:100%;height:1px;background:rgba(14,62,95,0.6);}
+.bar-pct{font-size:18px;font-weight:bold;}
+.bar-pct.c{color:#00E5FF;}
+.bar-pct.o{color:#FF6D00;}
+.bar-name{font-size:7px;color:#7AB8D4;letter-spacing:1px;text-align:center;line-height:1.4;}
+/* gesture label */
+.gest-box{background:#060F1C;border:1px solid #1A3A50;border-radius:5px;padding:8px;text-align:center;}
+.gest-val{font-size:17px;font-weight:bold;color:#FF9800;letter-spacing:4px;}
+.active-lbl{font-size:8px;color:#00E676;letter-spacing:3px;text-align:center;margin-top:2px;}
+/* camera */
+.cam-box{flex:1;background:#040C18;border:1px solid #0F3F60;border-radius:4px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.cam-top{position:absolute;top:0;left:0;right:0;height:30px;background:rgba(0,8,20,0.85);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;letter-spacing:4px;}
+.cam-bot{position:absolute;bottom:0;left:0;right:0;height:30px;background:rgba(0,8,20,0.85);display:flex;align-items:center;padding:0 10px;justify-content:space-between;}
+.c-corner{position:absolute;width:20px;height:20px;border-color:#00E5FF;border-style:solid;border-width:0;}
+.c-corner.tl{top:30px;left:0;border-top-width:2px;border-left-width:2px;}
+.c-corner.tr{top:30px;right:0;border-top-width:2px;border-right-width:2px;}
+.c-corner.bl{bottom:30px;left:0;border-bottom-width:2px;border-left-width:2px;}
+.c-corner.br{bottom:30px;right:0;border-bottom-width:2px;border-right-width:2px;}
+.scanline{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,229,255,0.012) 2px,rgba(0,229,255,0.012) 4px);pointer-events:none;}
+/* arc row */
+.arc-row{display:flex;align-items:center;gap:10px;padding:2px 0;}
+.arc-cnv{width:80px;height:80px;flex-shrink:0;}
+.tiles-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex:1;}
+.tile{background:#08162A;border:1px solid #0F3F60;border-left:3px solid;border-radius:4px;padding:4px 8px;display:flex;flex-direction:column;gap:1px;}
+.tile.c1{border-left-color:#00E5FF;}
+.tile.c2{border-left-color:#FF6D00;}
+.tile.c3{border-left-color:#00E676;}
+.tile.c4{border-left-color:#FF5252;}
+.tile-lbl{font-size:7px;color:#3A6680;letter-spacing:1px;}
+.tile-val{font-size:14px;font-weight:bold;}
+.tile-val.c1{color:#00E5FF;} .tile-val.c2{color:#FF6D00;} .tile-val.c3{color:#00E676;} .tile-val.c4{color:#FF5252;}
+/* graphs */
+.graph-wrap{background:#06111F;border:1px solid #0F3F60;border-radius:4px;padding:4px 6px;position:relative;}
+/* stat tiles right */
+.stat-tile{background:#08162A;border:1px solid #0F3F60;border-left:3px solid #00E5FF;border-radius:4px;padding:4px 8px;display:flex;flex-direction:column;gap:1px;}
+.st-lbl{font-size:7px;color:#3A6680;letter-spacing:1px;}
+.st-val{font-size:12px;font-weight:bold;color:#00E5FF;}
+.st-val.or{color:#FF9800;}
+.st-val.pu{color:#CE93D8;}
+.st-val.dm{color:#0097A7;}
+/* legend */
+.leg-row{display:flex;justify-content:space-between;align-items:center;}
+.leg-k{font-size:8px;color:#007BA8;}
+.leg-v{font-size:8px;color:#3A6680;}
+/* bottom */
+.log-panel{flex:1;display:flex;flex-direction:column;gap:4px;}
+.log-entry{font-size:8px;color:#00E5FF;line-height:1.6;}
+.log-entry.old{color:#3A6680;}
+.vline{width:1px;background:#0F3F60;flex-shrink:0;}
+.mode-panel{flex:1;display:flex;flex-direction:column;gap:4px;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex:1;}
+.mode-tile{background:#08162A;border:1px solid #0F3F60;border-left:3px solid;border-radius:4px;padding:4px 8px;}
+.mode-tile.g{border-left-color:#00E676;}
+.mode-tile.c{border-left-color:#00E5FF;}
+.mode-tile.o{border-left-color:#FF6D00;}
+.mode-tile.p{border-left-color:#CE93D8;}
+.mt-lbl{font-size:7px;color:#3A6680;letter-spacing:1px;}
+.mt-val{font-size:11px;font-weight:bold;}
+.mt-val.g{color:#00E676;} .mt-val.c{color:#00E5FF;} .mt-val.o{color:#FF9800;} .mt-val.p{color:#CE93D8;}
+.pulse{animation:pulse 1.6s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+</style>
+</head>
+<body>
+<div class="root">
+  <!-- HEADER -->
+  <div class="header">
+    <span class="h-dots">◈ ◈ ◈</span>
+    <span class="h-title">J·A·R·V·I·S &nbsp; GESTURE CONTROL SYSTEM &nbsp; v2</span>
+    <span class="h-clock" id="clk"></span>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- LEFT -->
+    <div class="left">
+      <div class="sec">MASTER VOLUME</div>
+      <div class="bar-section" style="flex:1">
+        <div class="bar-col">
+          <div class="bar-track">
+            <div class="bar-fill c" id="vf" style="height:72%"></div>
+            <div class="bar-tick" style="bottom:25%"></div>
+            <div class="bar-tick" style="bottom:50%"></div>
+            <div class="bar-tick" style="bottom:75%"></div>
+          </div>
+          <div class="bar-pct c" id="vp">72%</div>
+          <div class="bar-name">VOLUME</div>
+        </div>
+      </div>
+      <div class="hline"></div>
+      <div class="sec or">DISPLAY BRIGHTNESS</div>
+      <div class="bar-section" style="flex:1">
+        <div class="bar-col">
+          <div class="bar-track">
+            <div class="bar-fill o" id="bf" style="height:55%"></div>
+            <div class="bar-tick" style="bottom:25%"></div>
+            <div class="bar-tick" style="bottom:50%"></div>
+            <div class="bar-tick" style="bottom:75%"></div>
+          </div>
+          <div class="bar-pct o" id="bp">55%</div>
+          <div class="bar-name">BRIGHTNESS</div>
+        </div>
+      </div>
+      <div class="hline"></div>
+      <div class="gest-box">
+        <div class="gest-val" id="gv">VOL ▲</div>
+      </div>
+      <div class="active-lbl pulse">● SYSTEM ACTIVE</div>
+    </div>
+
+    <!-- CENTRE -->
+    <div class="centre">
+      <div class="cam-box">
+        <div class="scanline"></div>
+        <div class="c-corner tl"></div><div class="c-corner tr"></div>
+        <div class="c-corner bl"></div><div class="c-corner br"></div>
+        <svg width="200" height="180" viewBox="0 0 200 180" style="opacity:0.75">
+          <ellipse cx="100" cy="125" rx="36" ry="26" fill="none" stroke="#00E5FF" stroke-width="1.5"/>
+          <line x1="74" y1="106" x2="56" y2="62" stroke="#00E5FF" stroke-width="1.5"/>
+          <line x1="86" y1="99" x2="76" y2="52" stroke="#00E5FF" stroke-width="1.5"/>
+          <line x1="100" y1="97" x2="96" y2="47" stroke="#00E5FF" stroke-width="1.5"/>
+          <line x1="115" y1="100" x2="119" y2="53" stroke="#00E5FF" stroke-width="1.5"/>
+          <line x1="127" y1="108" x2="146" y2="80" stroke="#00E5FF" stroke-width="1.5"/>
+          <circle cx="56" cy="58" r="4" fill="#00E5FF"/><circle cx="76" cy="48" r="4" fill="#00E5FF"/>
+          <circle cx="96" cy="43" r="4" fill="#00E5FF"/><circle cx="119" cy="49" r="4" fill="#00E5FF"/>
+          <circle cx="146" cy="76" r="4" fill="#FF6D00"/>
+          <line x1="56" y1="58" x2="76" y2="48" stroke="#007BA8" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <line x1="76" y1="48" x2="96" y2="43" stroke="#007BA8" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <line x1="96" y1="43" x2="119" y2="49" stroke="#007BA8" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <line x1="119" y1="49" x2="146" y2="76" stroke="#007BA8" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <rect x="40" y="38" width="120" height="108" fill="none" stroke="#FF6D00" stroke-width="0.7" stroke-dasharray="4,3" opacity="0.4"/>
+        </svg>
+        <div class="cam-top" style="color:#00E5FF;">◈ &nbsp;SYSTEM ACTIVE&nbsp; ◈</div>
+        <div class="cam-bot">
+          <span style="color:#FF9800;font-size:10px;font-weight:bold;">✦ VOL ▲</span>
+          <span style="color:#3A6680;font-size:9px;">FPS 28</span>
+        </div>
+      </div>
+      <!-- arc row -->
+      <div class="arc-row">
+        <canvas class="arc-cnv" id="arc"></canvas>
+        <div class="tiles-grid">
+          <div class="tile c1"><div class="tile-lbl">CAMERA FPS</div><div class="tile-val c1" id="t-fps">28</div></div>
+          <div class="tile c2"><div class="tile-lbl">GESTURE</div><div class="tile-val c2" id="t-gest">VOL ▲</div></div>
+          <div class="tile c3"><div class="tile-lbl">CPU</div><div class="tile-val c3" id="t-cpu">34%</div></div>
+          <div class="tile c4"><div class="tile-lbl">RAM</div><div class="tile-val c4" id="t-ram">61%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+      <div class="sec">SYSTEM TELEMETRY</div>
+      <div class="graph-wrap"><canvas id="gc" height="40" style="width:100%;height:40px;display:block;"></canvas><div style="font-size:7px;color:#3A6680;position:absolute;bottom:5px;left:8px;">CPU USAGE</div><div style="font-size:8px;font-weight:bold;color:#00E5FF;position:absolute;bottom:5px;right:8px;" id="rv-cpu">34%</div></div>
+      <div class="graph-wrap"><canvas id="gr" height="40" style="width:100%;height:40px;display:block;"></canvas><div style="font-size:7px;color:#3A6680;position:absolute;bottom:5px;left:8px;">RAM USAGE</div><div style="font-size:8px;font-weight:bold;color:#FF9800;position:absolute;bottom:5px;right:8px;" id="rv-ram">61%</div></div>
+      <div class="graph-wrap"><canvas id="gn" height="40" style="width:100%;height:40px;display:block;"></canvas><div style="font-size:7px;color:#3A6680;position:absolute;bottom:5px;left:8px;">NETWORK I/O</div><div style="font-size:8px;font-weight:bold;color:#76FF03;position:absolute;bottom:5px;right:8px;" id="rv-net">12%</div></div>
+      <div class="hline"></div>
+      <div class="sec dim">SYSTEM INFO</div>
+      <div class="stat-tile"><div class="st-lbl">UPTIME</div><div class="st-val" id="uptime">00:00:00</div></div>
+      <div class="stat-tile"><div class="st-lbl">DISK USED</div><div class="st-val or">67%</div></div>
+      <div class="stat-tile"><div class="st-lbl">THREADS</div><div class="st-val pu">12</div></div>
+      <div class="stat-tile"><div class="st-lbl">LOCAL TIME</div><div class="st-val dm" id="ltime"></div></div>
+      <div class="hline"></div>
+      <div class="sec dim">GESTURE MAP</div>
+      <div class="leg-row"><span class="leg-k">✦ 5 fingers</span><span class="leg-v">Brightness ▲</span></div>
+      <div class="leg-row"><span class="leg-k">✦ Fist</span><span class="leg-v">Brightness ▼</span></div>
+      <div class="leg-row"><span class="leg-k">✦ Pinch</span><span class="leg-v">Volume ▼</span></div>
+      <div class="leg-row"><span class="leg-k">✦ Spread</span><span class="leg-v">Volume ▲</span></div>
+      <div class="leg-row"><span class="leg-k">✦ 3 fingers</span><span class="leg-v">Screenshot</span></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom">
+    <div class="log-panel">
+      <div class="sec">EVENT LOG  //  GESTURE HISTORY</div>
+      <div class="log-entry" id="l0">⚡  JARVIS v2 system online</div>
+      <div class="log-entry" id="l1">🎯  Gesture tracking active</div>
+      <div class="log-entry old" id="l2">📡  Camera feed initialized</div>
+      <div class="log-entry old" id="l3">—</div>
+    </div>
+    <div class="vline"></div>
+    <div class="mode-panel">
+      <div class="sec or">MODE STATUS</div>
+      <div class="mode-grid">
+        <div class="mode-tile g"><div class="mt-lbl">GESTURE MODE</div><div class="mt-val g">ONLINE</div></div>
+        <div class="mode-tile c"><div class="mt-lbl">CAMERA</div><div class="mt-val c">ACTIVE</div></div>
+        <div class="mode-tile o"><div class="mt-lbl">VOLUME</div><div class="mt-val o" id="m-vol">72%</div></div>
+        <div class="mode-tile p"><div class="mt-lbl">BRIGHTNESS</div><div class="mt-val p" id="m-bri">55%</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Clock
+function tick(){
+  const n=new Date();
+  document.getElementById('clk').textContent=n.toLocaleDateString()+' '+n.toLocaleTimeString();
+  document.getElementById('ltime').textContent=n.toLocaleTimeString();
+  const b=new Date(performance.timeOrigin);
+  const up=Math.floor((Date.now()-performance.timeOrigin)/1000);
+  const h=String(Math.floor(up/3600)).padStart(2,'0');
+  const m=String(Math.floor((up%3600)/60)).padStart(2,'0');
+  const s=String(up%60).padStart(2,'0');
+  document.getElementById('uptime').textContent=h+':'+m+':'+s;
+}
+tick(); setInterval(tick,1000);
+
+// Arc
+const arc=document.getElementById('arc');
+arc.width=160; arc.height=160;
+const ac=arc.getContext('2d');
+let ang=0,pls=0,pd=1;
+function drawArc(){
+  const ctx=ac,cx=80,cy=80,r=70;
+  ctx.clearRect(0,0,160,160);
+  const a=0.12+0.1*pls;
+  for(const[gw,al] of[[r+18,a*0.3],[r+11,a*0.5],[r+5,a*0.8],[r+2,a]]){
+    ctx.beginPath();ctx.arc(cx,cy,gw,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,229,255,${al})`;ctx.lineWidth=2;ctx.stroke();
+  }
+  const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+  bg.addColorStop(0,'rgba(0,90,140,0.9)');bg.addColorStop(0.6,'rgba(0,45,80,0.85)');bg.addColorStop(1,'rgba(4,12,28,0.95)');
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
+  for(let i=0;i<12;i++){
+    ctx.beginPath();
+    ctx.arc(cx,cy,r-10,((ang+i*30)*Math.PI/180),((ang+i*30+18)*Math.PI/180));
+    ctx.strokeStyle=i%3!==2?'rgba(0,229,255,0.9)':'rgba(255,109,0,0.85)';
+    ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+  }
+  for(let i=0;i<8;i++){
+    ctx.beginPath();
+    ctx.arc(cx,cy,r-28,((-ang*1.3+i*45)*Math.PI/180),((-ang*1.3+i*45+22)*Math.PI/180));
+    ctx.strokeStyle='rgba(0,170,255,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+  }
+  ctx.beginPath();
+  for(let i=0;i<6;i++){
+    const a=((ang*0.4+i*60)*Math.PI/180),hr=r-50;
+    i===0?ctx.moveTo(cx+hr*Math.cos(a),cy+hr*Math.sin(a)):ctx.lineTo(cx+hr*Math.cos(a),cy+hr*Math.sin(a));
+  }
+  ctx.closePath();
+  ctx.strokeStyle=`rgba(0,220,255,${0.55+0.35*pls})`;ctx.lineWidth=1.8;
+  ctx.fillStyle='rgba(0,70,110,0.45)';ctx.fill();ctx.stroke();
+  const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,16);
+  cg.addColorStop(0,'rgba(230,248,255,1)');cg.addColorStop(0.4,'rgba(0,220,255,0.9)');cg.addColorStop(1,'rgba(0,100,200,0)');
+  ctx.beginPath();ctx.arc(cx,cy,16,0,Math.PI*2);ctx.fillStyle=cg;ctx.fill();
+  ang=(ang+2)%360;pls+=0.035*pd;if(pls>=1)pd=-1;else if(pls<=0)pd=1;
+  requestAnimationFrame(drawArc);
+}
+drawArc();
+
+// Graphs
+const gdata={c:[],r:[],n:[]};
+const N=70;
+for(let i=0;i<N;i++){gdata.c.push(20+Math.random()*35);gdata.r.push(55+Math.random()*18);gdata.n.push(5+Math.random()*30);}
+function drawGraph(id,data,color){
+  const c=document.getElementById(id);if(!c)return;
+  const ctx=c.getContext('2d');const w=c.offsetWidth||200,h=40;
+  c.width=w;c.height=h;ctx.clearRect(0,0,w,h);
+  const n=data.length,xs=data.map((_,i)=>i*(w/(n-1)));
+  const ys=data.map(v=>h-5-(v/100)*(h-10));
+  const fg=ctx.createLinearGradient(0,0,0,h);
+  fg.addColorStop(0,color+'60');fg.addColorStop(1,color+'06');
+  ctx.beginPath();ctx.moveTo(xs[0],h-5);
+  xs.forEach((x,i)=>ctx.lineTo(x,ys[i]));
+  ctx.lineTo(xs[n-1],h-5);ctx.closePath();ctx.fillStyle=fg;ctx.fill();
+  ctx.beginPath();ctx.moveTo(xs[0],ys[0]);
+  xs.forEach((x,i)=>ctx.lineTo(x,ys[i]));
+  ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(xs[n-1],ys[n-1],3.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+}
+
+const gestures=['VOL ▲','VOL ▼','BRIGHT ▲','STANDBY','SCREENSHOT','BRIGHT ▼'];
+const logs=['📸  Screenshot saved','☀  Brightness → 72%','🔊  Volume changed','🌑  Brightness → 50%','⚡  Gesture detected'];
+let gt=0,li=0;
+const logEls=[document.getElementById('l0'),document.getElementById('l1'),document.getElementById('l2'),document.getElementById('l3')];
+let logQ=['⚡  JARVIS v2 system online','🎯  Gesture tracking active','📡  Camera feed initialized','— Awaiting gesture input'];
+
+function updateLog(msg){
+  logQ.unshift(msg);if(logQ.length>8)logQ.pop();
+  const ts=new Date().toLocaleTimeString();
+  logEls.forEach((el,i)=>{
+    if(i<logQ.length){el.textContent=(i===0?ts+'  ':'')+logQ[i];el.className='log-entry'+(i>1?' old':'');}
+  });
+}
+
+setInterval(()=>{
+  gdata.c.push(15+Math.random()*55);if(gdata.c.length>N)gdata.c.shift();
+  gdata.r.push(50+Math.random()*28);if(gdata.r.length>N)gdata.r.shift();
+  gdata.n.push(3+Math.random()*45);if(gdata.n.length>N)gdata.n.shift();
+  const cv=Math.round(gdata.c[gdata.c.length-1]);
+  const rv=Math.round(gdata.r[gdata.r.length-1]);
+  const nv=Math.round(gdata.n[gdata.n.length-1]);
+  drawGraph('gc',gdata.c,'#00E5FF');
+  drawGraph('gr',gdata.r,'#FF9800');
+  drawGraph('gn',gdata.n,'#76FF03');
+  document.getElementById('rv-cpu').textContent=cv+'%';
+  document.getElementById('rv-ram').textContent=rv+'%';
+  document.getElementById('rv-net').textContent=nv+'%';
+  document.getElementById('t-cpu').textContent=cv+'%';
+  document.getElementById('t-ram').textContent=rv+'%';
+  const vv=Math.round(60+20*Math.sin(Date.now()/3200));
+  const bv=Math.round(50+18*Math.cos(Date.now()/4100));
+  document.getElementById('vf').style.height=vv+'%';
+  document.getElementById('bf').style.height=bv+'%';
+  document.getElementById('vp').textContent=vv+'%';
+  document.getElementById('bp').textContent=bv+'%';
+  document.getElementById('m-vol').textContent=vv+'%';
+  document.getElementById('m-bri').textContent=bv+'%';
+  gt=(gt+1)%gestures.length;
+  document.getElementById('gv').textContent=gestures[gt];
+  document.getElementById('t-gest').textContent=gestures[gt].substring(0,8);
+  if(Math.random()>0.55){
+    li=(li+1)%logs.length;
+    updateLog(logs[li]);
+  }
+},900);
+drawGraph('gc',gdata.c,'#00E5FF');
+drawGraph('gr',gdata.r,'#FF9800');
+drawGraph('gn',gdata.n,'#76FF03');
+</script>
+</body>
+</html>
